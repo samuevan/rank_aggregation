@@ -1,0 +1,16 @@
+===========================================================================
+Code provided by Maksims Volkovs
+http://www.cs.toronto.edu/~mvolkovs
+
+To run:
+
+1. Extract archive
+2. Run 'learn_crf_aggr.m'
+
+Averaged over 5 folds NDCG and Precision results should be very close to those reported in 
+Table 2 in [1]. Note that the folder also includes, parsed for Matlab, MQ2008-agg dataset 
+from the LETOR4.0 data collection.
+
+
+[1] Maksims N. Volkovs and Richard S. Zemel.
+CRF Framework For Supervised Preference Aggregation. CIKM-2013.
