@@ -38,7 +38,7 @@ if __name__ == "__main__":
         output_folder = sys.argv[3]
     else:
         output_folder = sys.argv[1]
-
+        size_input_ranking = int(sys.argv[2])
         
     max_crf_iter = 200
 
@@ -69,14 +69,14 @@ if __name__ == "__main__":
 
     for part in range(1,6):
         partition = "u"+str(part)
-
+        print "CACETA"
         create_ranking_crf.run(output_folder+"Fold"+str(part)+"/test.txt", 
                                 output_folder+"Fold"+str(part)+"/crf_scores",
                                 output_folder+"CRF_rankings/", size_input_ranking,
                                 partition)
 
     
-    os.system("cp "+basedir+output_folder+"*.test "+ basedir+output_folder+"CRF_rankings/" )
+    #os.system("cp "+basedir+output_folder+"*.test "+ basedir+output_folder+"CRF_rankings/" )
     #calc_metrics.run(output_folder+"CRF_rankings/")
     
 

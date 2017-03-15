@@ -23,13 +23,17 @@ while (! feof (fid))
     #pega os valores de qid, dos experts e do docid
     linef = strrep(linef,"NULL","0");
     tokens = strsplit (linef," ");
-    num_of_experts = find(index(tokens,"#docid"),1) - 3;
+    #conto o numero de tokens e desconto os tokens que nao representam um expert
+    #por exemplo #docid, prob, inc
+    num_of_experts = find(index(tokens,"#docid"),1) - 3; 
+
 
     target_val = str2num(tokens{1});
 
     qid = str2num(strsplit(tokens{2},":"){2});
     #pega os valores das avaliacoes dos experts
     experts = zeros(1,num_of_experts);
+
 
     for k = 3:num_of_experts+2
         val = str2num(strsplit(tokens{k},":"){2});        
