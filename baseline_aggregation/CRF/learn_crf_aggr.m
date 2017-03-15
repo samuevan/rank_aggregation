@@ -26,7 +26,7 @@ for fold = 1:5
     [train_targets,train_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.txt']);
     [valid_targets,valid_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.txt']);
     [test_targets,test_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.txt']);
-
+        disp("FOLD READ - END")
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %set learning parameters
 
@@ -52,7 +52,8 @@ for fold = 1:5
 
 
     parameters
-
+    fold_time = tic;
+    fid_log = fopen([data_path, dataset, filesep, 'Fold', num2str(fold), filesep,"crf_log"], 'w');
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %pre-compute unary (\varphi_k) and pairwise potentials (\phi_k)
     train_data = extract_crf_potentials(train_data, parameters);
@@ -87,8 +88,8 @@ for fold = 1:5
     PR_TS(iter, :) = [precision, map];
     HITS_TS(iter, :) = hits;
 
-    fprintf(1, '<Aggr: ENDCG objective> ITER:%i  TIME:%3.1f  OBJ:%4.2f  |W|:%6.2f\n', iter, 0, E_TR(iter, 1), norm(W));
-    disp([NDCG_VL(iter, :); NDCG_TS(iter, :)])
+    fprintf(fid_log, '<Aggr: ENDCG objective> ITER:%i  TIME:%3.1f  OBJ:%4.2f  |W|:%6.2f\n', iter, 0, E_TR(iter, 1), norm(W));
+    #disp([NDCG_VL(iter, :); NDCG_TS(iter, :)])
 
     nqueries = size(train_targets, 1);
     batch_perm = randperm(nqueries)';
@@ -124,27 +125,30 @@ for fold = 1:5
 	    NDCG_TS(iter, :) = ndcg;
 	    PR_TS(iter, :) = [precision, map];
         HITS_TS(iter, :) = hits;
-	    fprintf(1, '<Aggr: ENDCG objective> ITER:%i  TIME:%3.1f  OBJ:%4.2f  |W|:%6.2f\n', iter, toc(startT), E_TR(iter, 1), norm(W));
-	    disp([NDCG_VL(iter, :); NDCG_TS(iter, :)])
+	    fprintf(fid_log, '<Aggr: ENDCG objective> ITER:%i  TIME:%3.1f  OBJ:%4.2f  |W|:%6.2f\n', iter, toc(startT), E_TR(iter, 1), norm(W));
+	    #disp([NDCG_VL(iter, :); NDCG_TS(iter, :)])
 
 
      	fid_final = fopen([data_path, dataset, filesep, 'Fold', num2str(fold), filesep,"crf_scores"], 'w');
 	    fprintf(fid_final, '%f\n', cell2mat(RESULT_test.scores));
 	    fclose(fid_final);
 
-end
+    end
+
+fprintf(fid_log, 'Total Time: %f', toc(fold_time));
+fclose(fid_log);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %save fold results
-RESULTS{fold, 1} = E_TR;
-RESULTS{fold, 2} = PR_VL;
-RESULTS{fold, 3} = NDCG_VL;
-RESULTS{fold, 4} = PR_TS;
-RESULTS{fold, 5} = NDCG_TS;
-RESULTS{fold, 6} = parameters;
-RESULTS{fold, 7} = W;
-RESULTS{fold, 8} = HITS_TS;
+    RESULTS{fold, 1} = E_TR;
+    RESULTS{fold, 2} = PR_VL;
+    RESULTS{fold, 3} = NDCG_VL;
+    RESULTS{fold, 4} = PR_TS;
+    RESULTS{fold, 5} = NDCG_TS;
+    RESULTS{fold, 6} = parameters;
+    RESULTS{fold, 7} = W;
+    RESULTS{fold, 8} = HITS_TS;
 end
 
 %average NDCG, Precision and MAP test results

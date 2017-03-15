@@ -8,7 +8,7 @@ rankings correspondentes
 
 import sys
 import os
-import calc_metrics
+#import calc_metrics
 import rankings_to_seach_dataset
 import create_ranking_crf
 
@@ -31,12 +31,15 @@ def convert_recomm_to_search_format(basedir,partition,size_input_ranking,
 if __name__ == "__main__":
 
 
-    basedir = sys.argv[1]
+    basedir = ""
+    if len(sys.argv) > 3:
+        basedir = sys.argv[1]
+        size_input_ranking = int(sys.argv[2])
+        output_folder = sys.argv[3]
+    else:
+        output_folder = sys.argv[1]
 
-    size_input_ranking = int(sys.argv[2])
-
-    output_folder = sys.argv[3]
-    
+        
     max_crf_iter = 200
 
 
@@ -45,17 +48,17 @@ if __name__ == "__main__":
         #os.mkdir(output_folder+partition)
 
     #else:
-    
-    for which in ["test","validation"]:
-        for part in range(1,6):
-            
-            partition = "u" + str(part)
+    if basedir:    
+        for which in ["test","validation"]:
+            for part in range(1,6):
+                
+                partition = "u" + str(part)
 
-            #if not os.path.isdir(output_folder+partition):
-            output_folder_fold = os.path.join(output_folder,"Fold"+str(part),"")
-            #os.mkdir(output_folder+"Fold"+str(part))
+                #if not os.path.isdir(output_folder+partition):
+                output_folder_fold = os.path.join(output_folder,"Fold"+str(part),"")
+                #os.mkdir(output_folder+"Fold"+str(part))
 
-            convert_recomm_to_search_format(basedir,partition,size_input_ranking,which,output_folder_fold)
+                convert_recomm_to_search_format(basedir,partition,size_input_ranking,which,output_folder_fold)
     
     
 
@@ -74,7 +77,7 @@ if __name__ == "__main__":
 
     
     os.system("cp "+basedir+output_folder+"*.test "+ basedir+output_folder+"CRF_rankings/" )
-    calc_metrics.run(output_folder+"CRF_rankings/")
+    #calc_metrics.run(output_folder+"CRF_rankings/")
     
 
 

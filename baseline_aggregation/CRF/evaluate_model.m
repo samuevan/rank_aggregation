@@ -3,8 +3,6 @@ function [ndcg, precision, map, hits] = evaluate_model(file_path, data_path, sco
 	in_file = [data_path,dataset,'Fold',num2str(fold),'/', 'in', which, num2str(randn), '.txt'];
 	out_file = [data_path,dataset,'Fold',num2str(fold),'/', 'out', which, num2str(randn), '.txt'];
 
-    in_file
-    out_file
 
 	fid = fopen(in_file, 'w');    
 	fprintf(fid, '%f\n', scores);
