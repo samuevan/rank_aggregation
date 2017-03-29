@@ -6,8 +6,14 @@ path(pathdef);
 arg_list = argv ();
 dataset = arg_list{1};#'MQ2008-agg';
 num_max_iter = str2num(arg_list{2});
+<<<<<<< HEAD
 pini = arg_list{3};#'MQ2008-agg';
 pend = arg_list{4};#'MQ2008-agg';
+=======
+pini = arg_list{3};
+pend = arg_list{4};
+
+>>>>>>> a973556356589c58c813008eefa4e1bda7af9900
 %paths to data and this file - set these to the location where the folder
 %is extracted
 data_path = [pwd, filesep];
@@ -17,13 +23,19 @@ RESULTS = cell(5, 7);
 
 for fold = pini:pend
     disp("Starting FOLD")
+    disp(fold)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %load LETOR4.0 data
 
     %load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.mat'], 'train_targets', 'train_data');
     %load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'vali.mat'], 'valid_targets', 'valid_data');
     %load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.mat'], 'test_targets', 'test_data');
+<<<<<<< HEAD
     tic()
+=======
+
+    [data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.txt']
+>>>>>>> a973556356589c58c813008eefa4e1bda7af9900
     [train_targets,train_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.txt']);
     toc()
     tic()
