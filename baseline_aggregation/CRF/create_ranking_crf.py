@@ -77,8 +77,8 @@ def run(test_file_path, scores_file_path, out_dir, size_ranking, partition):
 
 if __name__ == "__main__":
     
-    test_file = open(sys.argv[1],'r')
-    scores_file = open(sys.argv[2],'r')
+    test_file = sys.argv[1]
+    scores_file = sys.argv[2]
     out_dir = sys.argv[3]
     size_ranking = int(sys.argv[4])
     partition = sys.argv[5]    

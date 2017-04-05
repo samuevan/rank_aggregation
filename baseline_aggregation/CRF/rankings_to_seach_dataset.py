@@ -31,7 +31,7 @@ import os
 import glob
 import numpy as np
 import time
-
+import ipdb
 
 
 
@@ -65,28 +65,28 @@ def read_data_ml(inputf):
 
 
 def converto_to_MQ_format(user_id,positions,basedir,partition,which="test"):
-    
+
     straux = ""
     data_target = read_data_ml(basedir+partition+"."+which)
 
     for key in positions.keys():
         target_value = 0
 
-        if data_target.has_key(user_id):
+        if user_id in data_target:
             if key in data_target[user_id]:
                 target_value = 1
 
         straux += "%d qid:%s " %(target_value,user_id)
         rankings_pos = positions[key]
-        for pos in range(len(rankings_pos)-1):
+        for pos in range(len(rankings_pos)):
             item_pos = str(int(rankings_pos[pos])) if rankings_pos[pos] > 0 else "NULL"
             straux += "%d:%s " %(pos+1,item_pos)
 
-        item_pos = str(int(rankings_pos[pos])) if rankings_pos[-1] > 0 else "NULL"
-        straux += "%d:%s " %(len(rankings_pos),item_pos)
+        #item_pos = str(int(rankings_pos[-1])) if rankings_pos[-1] > 0 else "NULL"
+        #straux += "%d:%s " %(len(rankings_pos),item_pos)
     
         straux += "#docid = %d inc = 0.0 prob = 0.0\n" %(key)
-        
+
     
     return straux
          
@@ -100,6 +100,8 @@ def run(basedir,partition,size_input_ranking,which,output_dir):
     output_f = open(output_dir+which+".txt","w")
 
     files_path = sorted(glob.glob(basedir+partition+"*.out"))
+    
+    #ipdb.set_trace()
 
     files = []
     for f in files_path:
@@ -130,8 +132,8 @@ def run(basedir,partition,size_input_ranking,which,output_dir):
                     item,score = tokens[item_pos].split(":") #separa item id do score
                     item = int(item)
                     #atribui a posicao de cada item nos respectivos rankings
-                    if not user_item_map.has_key(item):
-                        user_item_map[item] = np.zeros(len(files))
+                    if not item in user_item_map:
+                        user_item_map[item] = np.zeros(len(files),dtype=int)
                         #soma +1 para diferenciar dos items faltantes 
                         #(que ficarao com o valor 0 e serao trocados por NULL
                         user_item_map[item][rank_id] = item_pos+1
@@ -146,8 +148,10 @@ def run(basedir,partition,size_input_ranking,which,output_dir):
                 break
     
         if not end_files:
+            #ipdb.set_trace()
             #str_aux += converto_to_MQ_format(user,user_item_map,basedir,partition,which) + "\n"
-            output_f.write(converto_to_MQ_format(user,user_item_map,basedir,partition,which))
+            data_str = converto_to_MQ_format(user,user_item_map,basedir,partition,which)
+            output_f.write(data_str)
         else:
             break
         
@@ -168,5 +172,5 @@ if __name__ == "__main__":
     total_time = time.time()
     run(basedir,partition,size_input_ranking,which,output_dir)
     total_time = time.time() - total_time
-    print "Total Time : " + str(total_time)
+    print("Total Time : " + str(total_time))
 

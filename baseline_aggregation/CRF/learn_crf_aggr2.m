@@ -1,4 +1,4 @@
-#!/usr/bin/octave -qfd
+#!/usr/bin/octave -qf
 clear all;
 close all;
 path(pathdef);
@@ -17,22 +17,27 @@ RESULTS = cell(5, 7);
 
 for fold = pini:pend
     disp("Starting FOLD")
-    disp(fold)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %load LETOR4.0 data
-
-    %load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.mat'], 'train_targets', 'train_data');
-    %load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'vali.mat'], 'valid_targets', 'valid_data');
-    %load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.mat'], 'test_targets', 'test_data');
     tic()
-    [data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.txt']
+    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.x'], 'train_data');
+    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.y'], 'train_targets');
 
-    [train_targets,train_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.txt']);
+    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.x'], 'test_data');
+    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.y'], 'test_targets');
+
+    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.x'], 'validation_data');
+    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.y'], 'validation_targets');
+    
+    #load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'vali.mat'], 'validation_targets', 'validation_data');
+    #load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.mat'], 'test_targets', 'test_data');
+    
+    #[train_targets,train_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.txt']);
     toc()
     tic()
-    [valid_targets,valid_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.txt']);
+    #[validation_targets,validation_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.txt']);
     toc()
-    [test_targets,test_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.txt']);
+    #[test_targets,test_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.txt']);
     disp("FOLD READ - END")
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %set learning parameters
@@ -64,7 +69,7 @@ for fold = pini:pend
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %pre-compute unary (\varphi_k) and pairwise potentials (\phi_k)
     train_data = extract_crf_potentials(train_data, parameters);
-    valid_data = extract_crf_potentials(valid_data, parameters);
+    validation_data = extract_crf_potentials(validation_data, parameters);
     test_data = extract_crf_potentials(test_data, parameters);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -83,7 +88,7 @@ for fold = pini:pend
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     iter = 1;
-    [~, ~, RESULT_valid] = crf_aggr_der(W, valid_data, [], [], true);
+    [~, ~, RESULT_valid] = crf_aggr_der(W, validation_data, [], [], true);
     [ndcg, precision, map, hits] = evaluate_model(file_path, data_path, cell2mat(RESULT_valid.scores), dataset, fold, 'validation');
     NDCG_VL(iter, :) = ndcg;
     PR_VL(iter, :) = [precision, map];
@@ -102,7 +107,7 @@ for fold = pini:pend
     batch_perm = randperm(nqueries)';
 
     for iter = 2:parameters.maxiter
-        iter
+        
 	    startT = tic;
 	    %make a pass through the training data and update CRF weights
 	    for j = 1:nqueries
@@ -122,7 +127,7 @@ for fold = pini:pend
 	    end
 
 	    %validate and test the model
-	    [~, ~, RESULT_valid] = crf_aggr_der(W, valid_data, [], [], true);
+	    [~, ~, RESULT_valid] = crf_aggr_der(W, validation_data, [], [], true);
 	    [ndcg, precision, map, hits] = evaluate_model(file_path, data_path, cell2mat(RESULT_valid.scores), dataset, fold, 'validation');
 	    NDCG_VL(iter, :) = ndcg;
 	    PR_VL(iter, :) = [precision, map];
@@ -135,7 +140,7 @@ for fold = pini:pend
 	    fprintf(fid_log, '<Aggr: ENDCG objective> ITER:%i  TIME:%3.1f  OBJ:%4.2f  |W|:%6.2f\n', iter, toc(startT), E_TR(iter, 1), norm(W));
 	    #disp([NDCG_VL(iter, :); NDCG_TS(iter, :)])
 
-
+        
      	fid_final = fopen([data_path, dataset, filesep, 'Fold', num2str(fold), filesep,"crf_scores"], 'w');
 	    fprintf(fid_final, '%f\n', cell2mat(RESULT_test.scores));
 	    fclose(fid_final);
@@ -162,13 +167,13 @@ end
 test_ndcg = [];
 test_prec = [];
 hits_total = [];
-for fold = 1:5
+for fold = pini:pend
 	test_prec = [test_prec; RESULTS{fold, 4}(end, :)];
 	test_ndcg = [test_ndcg; RESULTS{fold, 5}(end, :)];
     hits_total = [hits_total; RESULTS{fold,8}(end, :)]
 
 end
-fprintf(1, '%2.2f ', [100.*mean(test_ndcg(:, 1:5), 1), 100.*mean(test_prec(:, 1:5), 1), 100.*mean(test_prec(:, end), 1),mean(hits_total(:, end),1) ]);
+fprintf(1, '%2.2f ', [100.*mean(test_ndcg(:, pini:pend), 1), 100.*mean(test_prec(:, pini:pend), 1), 100.*mean(test_prec(:, end), 1),mean(hits_total(:, end),1) ]);
 fprintf(1, '\n');
 
 % results should be close to:

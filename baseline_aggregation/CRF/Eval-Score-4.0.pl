@@ -222,17 +222,17 @@ sub ReadInputFiles
 
 # modified by Jun Xu, March 3, 2009
 # Letor 4.0's file format is different to Letor 3.0
-#        if ($lnFea =~ m/^(\d+) qid\:([^\s]+).*?\#docid = ([^\s]+)$/)
-        if ($lnFea =~ m/^(\d+) qid\:([^\s]+).*?\#docid = ([^\s]+) inc = ([^\s]+) prob = ([^\s]+).*$/)
+        if ($lnFea =~ m/^(\d+) qid\:([^\s]+).*?\#docid = ([^\s]+)$/)
+        #if ($lnFea =~ m/^(\d+) qid\:([^\s]+).*?\#docid = ([^\s]+) inc = ([^\s]+) prob = ([^\s]+).*$/)
         {
             my $label = $1;
             my $qid = $2;
             my $did = $3;
-            my $inc = $4;
-            my $prob= $5;
+            #my $inc = $4;
+            #my $prob= $5;
             $hsQueryDocLabelScore{$qid}{$did}{"label"} = $label;
-            $hsQueryDocLabelScore{$qid}{$did}{"inc"} = $inc;
-            $hsQueryDocLabelScore{$qid}{$did}{"prob"} = $prob;
+            #$hsQueryDocLabelScore{$qid}{$did}{"inc"} = $inc;
+            #$hsQueryDocLabelScore{$qid}{$did}{"prob"} = $prob;
             $hsQueryDocLabelScore{$qid}{$did}{"pred"} = $predScore;
             $hsQueryDocLabelScore{$qid}{$did}{"lineNum"} = $lineNum;
         }
