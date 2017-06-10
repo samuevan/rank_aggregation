@@ -90,7 +90,7 @@ target_str : A string containing the labels/relevance of the items recommended
 to user_id (along with its metadata)
 
 """
-def converto_to_MQ_format(user_id,positions,basedir,partition,which="test"):
+def converto_to_MQ_format(user_id,positions,basedir,partition,data_target,which="test"):
     
 
     #since all the itens has the same number of rankers 
@@ -108,7 +108,7 @@ def converto_to_MQ_format(user_id,positions,basedir,partition,which="test"):
     map_str = ""
 
     straux = ""
-    data_target = read_data_ml(basedir+partition+"."+which)
+    #data_target = read_data_ml(basedir+partition+"."+which)
 
     for key in positions.keys():
         target_value = 0
@@ -179,7 +179,8 @@ def run(basedir,partition,size_input_ranking,which,output_dir):
     user = -1
 
     str_aux = ""
-    
+    data_target = read_data_ml(basedir+partition+"."+which)
+
     while True:
         #print user    
         user_item_map = {}
@@ -188,7 +189,7 @@ def run(basedir,partition,size_input_ranking,which,output_dir):
         #passa por cada um dos rankings de entrada e armazena os items 
         #recomendados para cada usuario bem como a posicao desses items nos 
         #rankings
-
+        tini = time.time()
         for rank_id in range(len(files)):
             #print(files[rank_id])
             #ipdb.set_trace()
@@ -213,16 +214,21 @@ def run(basedir,partition,size_input_ranking,which,output_dir):
             except :
                 end_files = True
                 break
-    
+        #print("REad -> "+ str(time.time()-tini))
         if not end_files:
             #ipdb.set_trace()
             #str_aux += converto_to_MQ_format(user,user_item_map,basedir,partition,which) + "\n"
+            tini2 = time.time()
             data_str, label_str, map_str = converto_to_MQ_format(user,
                                             user_item_map,basedir,partition,
-                                            which)            
+                                            data_target,which)            
+            #print("Conversion -> "+str(time.time()-tini2))
+
+            tini3 = time.time()
             output_x.write(data_str)
             output_y.write(label_str)
             output_map.write(map_str)
+            #print("Write -> " + str(time.time()-tini3))
             num_users += 1
             #ipdb.set_trace()
             #output_f.write(converto_to_MQ_format(user,user_item_map,basedir,partition,which))
@@ -248,5 +254,5 @@ if __name__ == "__main__":
     total_time = time.time()
     run(basedir,partition,size_input_ranking,which,output_dir)
     total_time = time.time() - total_time
-    #print "Total Time : " + str(total_time)
+    print("Total Time : " + str(total_time))
 
