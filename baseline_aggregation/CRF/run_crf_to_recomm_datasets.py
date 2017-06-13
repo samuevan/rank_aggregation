@@ -13,6 +13,7 @@ import rankings_to_seach_dataset
 import rankings_to_octave_format
 import create_ranking_crf
 import argparse
+import glob
 import ipdb
 
 
@@ -24,16 +25,20 @@ def parse_args():
 
     p = argparse.ArgumentParser()
 
-    p.add_argument("basedir",type=str,
+    p.add_argument("--basedir",type=str,
         help="Folder containing the rankings to be converted to CRF format")
     p.add_argument("--i2use",type=int,default=20,
         help="Size of the input rankings")
     p.add_argument("--i2sug",type=int,default=10,
         help="Size of the aggregated rankings")
+    p.add_argument("--crf_dir",type=str, 
+        help="Folder containing teh rankings in the expected CRF(octave) format")
     p.add_argument("-o","--out_dir",type=str,
         help="Folder to save the aggregated rankings")
     p.add_argument("--pini",type=int,default=1)
     p.add_argument("--pend",type=int,default=5)
+    p.add_argument("--nruns",type=int,default=1,
+        help="Number of runs")
     p.add_argument("--crf_iter",type=int,default=200)
 
     return p.parse_args()
@@ -91,8 +96,8 @@ if __name__ == "__main__":
     max_crf_iter = 10'''
 
 
-    if not os.path.isdir(args.out_dir):
-        os.mkdir(args.out_dir)
+    if not os.path.isdir(args.crf_dir):
+        os.mkdir(args.crf_dir)
         #os.mkdir(output_folder+partition)
 
     #else:
@@ -103,7 +108,7 @@ if __name__ == "__main__":
                 partition = "u" + str(part)
 
                 #if not os.path.isdir(output_folder+partition):
-                output_folder_fold = os.path.join(args.out_dir,"Fold"+str(part),"")
+                output_folder_fold = os.path.join(args.crf_dir,"Fold"+str(part),"")
                 #os.mkdir(output_folder+"Fold"+str(part))
 
                 
@@ -117,22 +122,37 @@ if __name__ == "__main__":
     
 
 
-    crf_cmd = "octave learn_crf_aggr2.m {out_dir} {crf_iter} {pini} {pend}"
+
+
+    crf_cmd = "octave learn_crf_aggr2.m {crf_dir} {crf_iter} {pini} {pend} {nruns}"
     #os.system("octave learn_crf_aggr2.m "+output_folder + " " + str(max_crf_iter) + " 1 5")
     print(crf_cmd.format(**args.__dict__))
     #ipdb.set_trace()
     os.system(crf_cmd.format(**args.__dict__))
 
-    if not os.path.isdir(os.path.join(args.out_dir+"CRF_rankings")):
-        os.mkdir(os.path.join(args.out_dir+"CRF_rankings"))
+    #In the case of out_dir was not specified we can use the same directory 
+    #of the CRF files
+    if args.out_dir:
+        if not os.path.isdir(os.path.join(args.out_dir)):
+            os.mkdir(os.path.join(args.out_dir))             
+    else:
+        args.out_dir = args.crf_dir
+
+
+    if not os.path.isdir(os.path.join(args.out_dir,"CRF_rankings/")):
+        os.mkdir(os.path.join(args.out_dir,"CRF_rankings/"))
+    
+
 
     for part in range(args.pini,args.pend+1):
         partition = "u"+str(part)
-        print("CACETA")
-        create_ranking_crf.run(args.out_dir+"Fold"+str(part)+"/test.map", 
-                                args.out_dir+"Fold"+str(part)+"/crf_scores",
-                                args.out_dir+"CRF_rankings/", args.i2sug,
-                                partition)
+        score_files = glob.glob(args.out_dir+"Fold"+str(part)+"/*.scores")
+
+        for curr_run,score_file in enumerate(score_files):
+            create_ranking_crf.run(args.out_dir+"Fold"+str(part)+"/test.map", 
+                                    args.out_dir+"Fold"+str(part)+"/"+score_file,
+                                    args.out_dir+"CRF_rankings/", args.i2sug,
+                                    partition,run=curr_run)
 
     
     #os.system("cp "+basedir+output_folder+"*.test "+ basedir+output_folder+"CRF_rankings/" )

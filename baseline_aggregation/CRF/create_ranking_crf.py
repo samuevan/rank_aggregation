@@ -30,7 +30,7 @@ partition : particao atual
 
 Salva um arquivo contendo um ranking gerado a partir dos scores atribuidos pelo CRF
 '''
-def run(test_file_path, scores_file_path, out_dir, size_ranking, partition):
+def run(test_file_path, scores_file_path, out_dir, size_ranking, partition,run=0):
 
 
     test_file = open(test_file_path,'r')
@@ -38,7 +38,7 @@ def run(test_file_path, scores_file_path, out_dir, size_ranking, partition):
 
 
 
-    name_f = partition + "-CRF.out"
+    name_f = partition +"run"+str(run)+".CRF.out"
     output_f = open(out_dir+name_f,"w")
 
     qid_past = -1
