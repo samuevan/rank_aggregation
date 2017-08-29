@@ -128,7 +128,7 @@ for fold = pini:pend
         batch_perm = randperm(nqueries)';
 
         for iter = 2:parameters.maxiter
-            
+
 	        startT = tic;
 	        %make a pass through the training data and update CRF weights
 	        for j = 1:nqueries
@@ -146,26 +146,36 @@ for fold = pini:pend
 		        E_TR(iter, 1) = E_TR(iter, 1) + f;
 		        W = W + parameters.learnrate .* df - parameters.weight_penalty .* parameters.learnrate .* W;
 	        end
-
+    
 	        %validate and test the model
 	        [~, ~, RESULT_valid] = crf_aggr_der(W, validation_data, [], [], true);
 	        [ndcg, precision, map, hits] = evaluate_model(file_path, data_path, cell2mat(RESULT_valid.scores), dataset, fold, 'validation');
 	        NDCG_VL(iter, :) = ndcg;
 	        PR_VL(iter, :) = [precision, map];
-	
 	        [~, ~, RESULT_test] = crf_aggr_der(W, test_data, [], [], true);
 	        [ndcg, precision, map, hits] = evaluate_model(file_path, data_path, cell2mat(RESULT_test.scores), dataset, fold, 'test');
 	        NDCG_TS(iter, :) = ndcg;
 	        PR_TS(iter, :) = [precision, map];
             HITS_TS(iter, :) = hits;
 	        fprintf(fid_log, '<Aggr: ENDCG objective> ITER:%i  TIME:%3.1f  OBJ:%4.2f  |W|:%6.2f\n', iter, toc(startT), E_TR(iter, 1), norm(W));
-            fflush(fid_log);
-	        disp([NDCG_VL(iter, :); NDCG_TS(iter, :)])
+            fflush(fid_log);           
+	        %disp([NDCG_VL(iter, :); NDCG_TS(iter, :)])
 
             out_scores_file = ["crf_",num2str(runid),".scores"];
          	fid_final = fopen([data_path, dataset, filesep, 'Fold', num2str(fold), filesep,out_scores_file], 'w');
 	        fprintf(fid_final, '%f\n', cell2mat(RESULT_test.scores));
 	        fclose(fid_final);
+
+            if mod(iter,10) == 0
+                partial_files = [data_path, dataset, filesep, 'Fold', num2str(fold), filesep,'partial'];
+                mkdir(partial_files);
+                out_scores_partial = ["crf_",num2str(runid),'_iter',num2str(iter),".scores"];
+                fid_partial = fopen([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'partial',filesep,out_scores_partial],'w');
+                fprintf(fid_partial, '%f\n', cell2mat(RESULT_test.scores));
+	            fclose(fid_partial);
+            end
+
+                
 
             
 
