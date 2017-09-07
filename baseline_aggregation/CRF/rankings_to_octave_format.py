@@ -119,7 +119,7 @@ def converto_to_MQ_format(user_id,positions,basedir,partition,data_target,which=
                 map_str += "1 qid:{0} #docid = {1}\n".format(user_id,key)
             else:
                 labels_str += "0\n"
-                map_str += "1 qid:{0} #docid = {1}\n".format(user_id,key)
+                map_str += "0 qid:{0} #docid = {1}\n".format(user_id,key)
                 #target_value = 1 #REMOVER
 
         #straux += "%d qid:%s " %(target_value,user_id) REMOVER

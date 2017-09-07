@@ -20,6 +20,8 @@ RESULTS = cell(5, 7);
 #out_scores_file = ["crf_",run_id,".scores"]
 #str_read_params_time = ""
 
+rand("seed",1234)
+
 for fold = pini:pend
     #fid_log = fopen([data_path, dataset, filesep, 'Fold', num2str(fold), filesep,"crf_log_",run_id], 'w');
 
@@ -27,25 +29,34 @@ for fold = pini:pend
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %load LETOR4.0 data
     read_time = tic;
-    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.x'], 'train_data');
-    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.y'], 'train_targets');
+    #verify if the Folder contains files in the octave or text formats
+    train_file_name = [data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.x'];
+    file_format = exist(train_file_name);
 
-    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.x'], 'test_data');
-    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.y'], 'test_targets');
+    #if the file train_file_name does not exist (i.e. the train is not in the octave format we read the files using the code in else
+    if file_format == 2
+        load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.x'], 'train_data');
+        load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.y'], 'train_targets');
 
-    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.x'], 'validation_data');
-    load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.y'], 'validation_targets');
-    
+        load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.x'], 'test_data');
+        load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.y'], 'test_targets');
+
+        load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.x'], 'validation_data');
+        load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.y'], 'validation_targets');
+
+    else    
     #load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'vali.mat'], 'validation_targets', 'validation_data');
     #load([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.mat'], 'test_targets', 'test_data');
     
-    #[train_targets,train_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.txt']);
-    
-    #[validation_targets,validation_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.txt']);
-    
+        [train_targets,train_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train.txt']);
+        [validation_targets,validation_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation.txt']);
+        [test_targets,test_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.txt']);
+
+    end
+
     #fprintf(fid_log, 'Reading Time: %f\n',toc(read_time));
     str_read_params_time = ['Reading Time: ',num2str(toc(read_time)),'\n'];
-    #[test_targets,test_data] = read_from_txt([data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test.txt']);
+    
     disp("FOLD READ - END")
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %set learning parameters

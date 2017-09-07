@@ -40,6 +40,9 @@ def parse_args():
     p.add_argument("--nruns",type=int,default=1,
         help="Number of runs")
     p.add_argument("--crf_iter",type=int,default=200)
+    p.add_argument("--txt_format",action='store_true',
+        help="When set the input data to CRF will be loaded/constructed using" + \
+        "\ text format (the same used by metasearch datasets)")
 
     return p.parse_args()
 
@@ -80,7 +83,7 @@ def convert_recomm_to_search_format(basedir,partition,size_input_ranking,
 
 if __name__ == "__main__":
 
-    octave_format = True
+    #octave_format = True
 
     args = parse_args()
 
@@ -111,13 +114,12 @@ if __name__ == "__main__":
                 output_folder_fold = os.path.join(args.crf_dir,"Fold"+str(part),"")
                 #os.mkdir(output_folder+"Fold"+str(part))
 
-                
-                if octave_format:
-                    convert_recomm_to_octave_format(args.basedir,
-                        partition,args.i2use,which,output_folder_fold)
-                else:
+                if args.txt_format:
                     convert_recomm_to_search_format(args.basedir,partition,
                         args.i2use,which,output_folder_fold)
+                else:
+                    convert_recomm_to_octave_format(args.basedir,
+                        partition,args.i2use,which,output_folder_fold)
     
     
 
@@ -125,6 +127,7 @@ if __name__ == "__main__":
 
 
     crf_cmd = "octave learn_crf_aggr2.m {crf_dir} {crf_iter} {pini} {pend} {nruns}"
+    #crf_cmd = "octave learn_crf_aggr2.m {crf_dir} {crf_iter} {pini} {pend} {nruns}"
     #os.system("octave learn_crf_aggr2.m "+output_folder + " " + str(max_crf_iter) + " 1 5")
     print(crf_cmd.format(**args.__dict__))
     #ipdb.set_trace()
