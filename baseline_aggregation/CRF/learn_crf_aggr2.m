@@ -86,17 +86,45 @@ for fold = pini:pend
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %pre-compute unary (\varphi_k) and pairwise potentials (\phi_k)
     param_time = tic;
-    train_data = extract_crf_potentials(train_data, parameters);
-    str_read_params_time = [str_read_params_time, 'Param Train Time:',num2str(toc(param_time)),'\n'];
-    #fprintf(fid_log, 'Param Train Time: %f\n',toc(param_time));
+    
+    #check if the parameters where computed in a previous run, Do the same for all files
+    #TODO add a flag to control this    
+    train_param_file = [data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'train_parameters.m'];
+    if exist(train_param_file)
+        load(train_param_file);
+                str_read_params_time = [str_read_params_time, 'Param Train Time:',num2str(toc(param_time)),'\n'];
+    else
+        train_data = extract_crf_potentials(train_data, parameters);
+        str_read_params_time = [str_read_params_time, 'Param Train Time:',num2str(toc(param_time)),'\n'];
+        #fprintf(fid_log, 'Param Train Time: %f\n',toc(param_time));
+        save(train_param_file,'train_data');
+    end
+
     param_time = tic;
-    validation_data = extract_crf_potentials(validation_data, parameters);
-    str_read_params_time = [str_read_params_time, 'Param Val Time:',num2str(toc(param_time)),'\n'];
-    #fprintf(fid_log, 'Param Val Time: %f\n',toc(param_time));
+
+    val_param_file = [data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'validation_parameters.m'];
+    if exist(val_param_file)
+        load(val_param_file);
+        str_read_params_time = [str_read_params_time, 'Param Val Time:',num2str(toc(param_time)),'\n'];
+    else
+        validation_data = extract_crf_potentials(validation_data, parameters);
+        str_read_params_time = [str_read_params_time, 'Param Val Time:',num2str(toc(param_time)),'\n'];
+        #fprintf(fid_log, 'Param Val Time: %f\n',toc(param_time));
+        save(val_param_file,'validation_data');
+    end
+
     param_time = tic;
-    test_data = extract_crf_potentials(test_data, parameters);
-    str_read_params_time = [str_read_params_time, 'Param Test Time:',num2str(toc(param_time)),'\n'];
-    #fprintf(fid_log, 'Param Test Time: %f\n',toc(param_time));
+
+    test_param_file = [data_path, dataset, filesep, 'Fold', num2str(fold), filesep, 'test_parameters.m'];
+    if exist(test_param_file)
+        load(test_param_file);
+        str_read_params_time = [str_read_params_time, 'Param Val Time:',num2str(toc(param_time)),'\n'];
+    else
+        test_data = extract_crf_potentials(test_data, parameters);
+        str_read_params_time = [str_read_params_time, 'Param Test Time:',num2str(toc(param_time)),'\n'];
+        #fprintf(fid_log, 'Param Test Time: %f\n',toc(param_time));
+        save(test_param_file,'test_data');
+    end
     #fflush(fid_log)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
@@ -226,8 +254,3 @@ end
 
 % results should be close to:
 % 42.29 44.99 47.54 49.05 51.03 48.67 44.58 42.08 38.75 36.55 50.41
-
-
-
-
-
